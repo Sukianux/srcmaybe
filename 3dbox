@@ -16,7 +16,7 @@ local Tracer_Transparency = 1 -- 1 Visible, 0 Not Visible
 
 local Autothickness = false -- Makes screen less encumbered
 
-local Team_Check = false
+local Team_Check = true
 local red = Color3.fromRGB(227, 52, 52)
 local green = Color3.fromRGB(88, 217, 24)
 
