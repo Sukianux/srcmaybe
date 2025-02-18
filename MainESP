@@ -1,0 +1,94 @@
+--[[ 
+    WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+local lplr = game.Players.LocalPlayer
+local camera = game:GetService("Workspace").CurrentCamera
+local CurrentCamera = workspace.CurrentCamera
+local worldToViewportPoint = CurrentCamera.worldToViewportPoint
+
+local HeadOff = Vector3.new(0, 1, 0)  -- Slight adjustment to position text above head
+local LegOff = Vector3.new(0, 3, 0)   -- Adjust distance for the full body
+
+local function createBoxEsp(v)
+    local Box = Drawing.new("Square")
+    Box.Visible = true
+    Box.Color = v.TeamColor.Color
+    Box.Thickness = 1
+    Box.Transparency = 1
+    Box.Filled = false
+
+    local HealthBar = Drawing.new("Line")
+    HealthBar.Visible = true
+    HealthBar.Color = Color3.new(0, 1, 0)
+    HealthBar.Thickness = 2
+
+    local NameTag = Drawing.new("Text")
+    NameTag.Visible = false
+    NameTag.Color = Color3.new(1, 1, 1)
+    NameTag.Size = 9  -- Fixed size for the name tag
+    NameTag.Center = true
+    NameTag.Outline = true
+    NameTag.OutlineColor = Color3.new(0, 0, 0)
+
+    local DistanceTag = Drawing.new("Text")
+    DistanceTag.Visible = false
+    DistanceTag.Color = Color3.new(1, 1, 1)
+    DistanceTag.Size = 9  -- Fixed size for the distance tag
+    DistanceTag.Center = true
+    DistanceTag.Outline = true
+    DistanceTag.OutlineColor = Color3.new(0, 0, 0)
+
+    game:GetService("RunService").RenderStepped:Connect(function()
+        if v.Character and v.Character:FindFirstChild("Humanoid") and v.Character:FindFirstChild("HumanoidRootPart") and v ~= lplr and v.Character.Humanoid.Health > 0 then
+            local RootPart = v.Character.HumanoidRootPart
+            local Head = v.Character.Head
+
+            -- Convert world position to screen position
+            local RootPosition, onScreenRoot = worldToViewportPoint(CurrentCamera, RootPart.Position)
+            local HeadPosition = worldToViewportPoint(CurrentCamera, Head.Position + HeadOff)
+
+            -- Box size and position
+            Box.Size = Vector2.new(1000 / RootPosition.Z, HeadPosition.Y - RootPosition.Y)
+            Box.Position = Vector2.new(RootPosition.X - Box.Size.X / 2, RootPosition.Y - Box.Size.Y / 2)
+
+            -- Health Bar
+            local health = v.Character.Humanoid.Health / v.Character.Humanoid.MaxHealth
+            HealthBar.From = Vector2.new(Box.Position.X + Box.Size.X + 5, Box.Position.Y + Box.Size.Y * (1 - health))
+            HealthBar.To = Vector2.new(Box.Position.X + Box.Size.X + 5, Box.Position.Y + Box.Size.Y)
+            HealthBar.Color = Color3.new(1 - health, health, 0)
+
+            -- Distance (formatted as [distance])
+            local distance = math.floor((lplr.Character.HumanoidRootPart.Position - RootPart.Position).Magnitude)
+            DistanceTag.Position = Vector2.new(RootPosition.X, RootPosition.Y - 30)  -- Position above the head
+            DistanceTag.Text = "[" .. tostring(distance) .. "]"  -- Distance in [distance] format
+
+            -- Username (max 4 characters)
+            NameTag.Position = Vector2.new(RootPosition.X + 40, RootPosition.Y - 30)  -- Position next to distance
+            NameTag.Text = v.Name:sub(1, 4)  -- Limit to 4 characters
+
+            -- Lock text size to a fixed number (doesn't depend on distance)
+            local screenSize = game:GetService("Workspace").CurrentCamera.ViewportSize
+            local scaleFactor = screenSize.X / 1920  -- This assumes a 1920x1080 screen resolution for consistent scaling
+            NameTag.Size = 9 * scaleFactor  -- Make size dependent on screen resolution but not on distance
+            DistanceTag.Size = 9 * scaleFactor
+
+            -- Make both visible
+            DistanceTag.Visible = true
+            NameTag.Visible = true
+        else
+            -- Hide text when the player is dead or not available
+            NameTag.Visible = false
+            DistanceTag.Visible = false
+        end
+    end)
+end
+
+-- Apply to existing players
+for i, v in pairs(game.Players:GetChildren()) do
+    createBoxEsp(v)
+end
+
+-- Apply to players when they join
+game.Players.PlayerAdded:Connect(function(v)
+    createBoxEsp(v)
+end)
