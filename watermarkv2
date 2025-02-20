@@ -1,0 +1,67 @@
+-- Watermark for Roblox UI with Real FPS, Ping & Double Outline
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
+
+-- Create GUI elements
+local ScreenGui = Instance.new("ScreenGui")
+local OuterFrame = Instance.new("Frame") -- Black Outline
+local InnerFrame = Instance.new("Frame") -- Purple Border
+local TextLabel = Instance.new("TextLabel")
+
+-- Parent the UI to CoreGui
+ScreenGui.Parent = game:GetService("CoreGui")
+
+-- Outer Black Frame properties (First Outline)
+OuterFrame.Parent = ScreenGui
+OuterFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black border
+OuterFrame.BorderSizePixel = 0
+OuterFrame.Position = UDim2.new(0, 9, 0, 9) -- Slight offset
+OuterFrame.Size = UDim2.new(0, 252, 0, 27) -- Slightly bigger than the inner frame
+
+-- Inner Purple Frame properties (Second Outline)
+InnerFrame.Parent = OuterFrame
+InnerFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Black inner background
+InnerFrame.BorderSizePixel = 2
+InnerFrame.BorderColor3 = Color3.fromRGB(120, 0, 255) -- Purple outline
+InnerFrame.Position = UDim2.new(0, 1, 0, 1) -- Center it within the black frame
+InnerFrame.Size = UDim2.new(0, 250, 0, 25)
+
+-- TextLabel properties
+TextLabel.Parent = InnerFrame
+TextLabel.BackgroundTransparency = 1
+TextLabel.Size = UDim2.new(1, 0, 1, 0)
+TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- White text
+TextLabel.Font = Enum.Font.Code
+TextLabel.TextSize = 14
+TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+TextLabel.Position = UDim2.new(0, 5, 0, 0) -- Small padding
+
+-- Variables to store FPS calculation
+local fpsCounter = 0
+local fps = 0
+
+-- Function to update FPS and Ping every second
+spawn(function()
+    while true do
+        fps = fpsCounter
+        fpsCounter = 0
+
+        local ping = Stats.Network:FindFirstChild("ServerStatsItem") and Stats.Network.ServerStatsItem["Data Ping"]:GetValue() or 0
+        ping = math.floor(ping) -- Round ping value
+
+        -- Update text dynamically
+        TextLabel.Text = string.format("senpaihook | .gg/senpaihook | %d fps | %d ms", fps, ping)
+
+        -- Auto adjust frame sizes based on text length
+        local textWidth = TextLabel.TextBounds.X + 10
+        InnerFrame.Size = UDim2.new(0, textWidth, 0, 25)
+        OuterFrame.Size = UDim2.new(0, textWidth + 2, 0, 27)
+
+        wait(1) -- Wait 1 second before updating again
+    end
+end)
+
+-- Track FPS
+RunService.RenderStepped:Connect(function()
+    fpsCounter = fpsCounter + 1
+end)
