@@ -50,7 +50,7 @@ spawn(function()
         ping = math.floor(ping) -- Round ping value
 
         -- Update text dynamically
-        TextLabel.Text = string.format("senpaihook | .gg/senpaihook | %d fps | %d ms", fps, ping)
+        TextLabel.Text = string.format("senpaihook | .gg/JePrpNUPD7 or guns.lol/cursyn | %d fps | %d ms", fps, ping)
 
         -- Auto adjust frame sizes based on text length
         local textWidth = TextLabel.TextBounds.X + 10
